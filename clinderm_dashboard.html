@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinderm — Dashboard Financiero 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#8DC63F;--green-dk:#5a8a1f;--green-pale:#edf6d6;--green-mid:#c5e68a;
+  --red:#E24B4A;--red-pale:#FCEBEB;--amber:#EF9F27;--amber-pale:#FEF3E0;
+  --blue:#378ADD;--blue-pale:#E6F1FB;
+  --gray-800:#1e1e1e;--gray-200:#e4e4e0;--gray-100:#f2f2ef;--gray-50:#f8f8f5;
+  --text:#181818;--text-muted:#707070;--border:rgba(0,0,0,0.08);--radius:14px;--radius-sm:8px;
+  --shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(--text);font-size:14px}
+.shell{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--gray-800);padding:14px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.lg{color:var(--green)}.lw{color:#fff}
+.tdiv{width:1px;height:30px;background:rgba(255,255,255,0.1);margin:0 6px}
+.tb-brand{flex:1}
+.tb-title{font-size:14px;color:#fff;font-weight:500}
+.tb-sub{font-size:10px;color:var(--green);letter-spacing:1.2px;text-transform:uppercase;margin-top:1px}
+.pchip{background:rgba(141,198,63,0.15);color:var(--green);border:1px solid rgba(141,198,63,0.35);border-radius:20px;padding:5px 16px;font-size:11px;font-weight:500;white-space:nowrap}
+.filterbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:54px;z-index:190}
+.flbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
+.fsel{appearance:none;-webkit-appearance:none;padding:7px 34px 7px 14px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;border:1px solid var(--gray-200);border-radius:20px;background:var(--gray-50) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238DC63F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--text);cursor:pointer;min-width:160px;transition:border-color .15s}
+.fsel:hover,.fsel:focus{border-color:var(--green);outline:none}
+.fsep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.tabs-wrap{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;position:sticky;top:108px;z-index:180}
+.tabs{display:flex;overflow-x:auto}
+.tbn{padding:13px 18px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;color:var(--text-muted);cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s,border-color .15s}
+.tbn.active{color:var(--green);border-bottom-color:var(--green)}
+.tbn:hover:not(.active){color:var(--text)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.content{padding:24px 28px 50px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;border-left:3.5px solid var(--green);box-shadow:var(--shadow)}
+.kpi.neg{border-left-color:var(--red)}.kpi.warn{border-left-color:var(--amber)}.kpi.blue{border-left-color:var(--blue)}
+.kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.9px;color:var(--text-muted);margin-bottom:6px}
+.kpi-val{font-size:19px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;line-height:1.15}
+.kpi-val.pos{color:var(--green-dk)}.kpi-val.neg{color:var(--red)}.kpi-val.amber{color:#a06a00}.kpi-val.blue{color:#0d5599}
+.kpi-sub{font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4}
+.disc{display:flex;align-items:flex-start;gap:10px;background:var(--amber-pale);border:1px solid rgba(239,159,39,0.3);border-radius:var(--radius-sm);padding:11px 15px;margin-bottom:18px;font-size:11px;color:#7a4f00;line-height:1.6;font-style:italic}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-row.full{grid-template-columns:1fr}
+.cbox{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.ctitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px}
+.cwrap{position:relative;width:100%}
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.ld.ln{height:2.5px;border-radius:0;width:14px}
+.dist-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
+.dbox{border-radius:var(--radius-sm);padding:16px;text-align:center}
+.dbox.g{background:var(--green-pale);border:1px solid rgba(99,153,34,0.25)}
+.dbox.a{background:var(--amber-pale);border:1px solid rgba(186,117,23,0.25)}
+.dbox.b{background:var(--blue-pale);border:1px solid rgba(55,138,221,0.25)}
+.dlbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.dlbl.g{color:#27500A}.dlbl.a{color:#633806}.dlbl.b{color:#0C447C}
+.dval{font-size:17px;font-weight:600;font-family:'DM Mono',monospace}
+.dval.g{color:#27500A}.dval.a{color:#633806}.dval.b{color:#0C447C}
+.dsub{font-size:10px;color:var(--text-muted);margin-top:4px}
+.pbar-grid{display:flex;flex-direction:column;gap:14px}
+.pbt{display:flex;justify-content:space-between;margin-bottom:4px}
+.pbt-lbl{font-size:12px;font-weight:500;color:var(--text)}
+.pbt-pct{font-size:12px;font-weight:600;font-family:'DM Mono',monospace}
+.pbtrack{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden}
+.pbfill{height:100%;border-radius:4px;background:var(--green)}
+.pbfill.neg{background:var(--red)}
+.mtable{width:100%;border-collapse:collapse;font-size:12px}
+.mtable th{text-align:left;font-weight:600;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:0 10px 10px;border-bottom:1px solid var(--border)}
+.mtable td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.mtable tr:last-child td{border-bottom:none;background:var(--gray-50);font-weight:600}
+.pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;font-family:'DM Mono',monospace}
+.pill.p{background:var(--green-pale);color:#3B6D11}
+.pill.n{background:var(--red-pale);color:#A32D2D}
+.anote{font-size:10px;color:var(--text-muted);margin-top:2px}
+@media(max-width:700px){.chart-row{grid-template-columns:1fr}.dist-grid{grid-template-columns:1fr}.content,.topbar,.filterbar,.tabs-wrap{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="topbar">
+  <div class="logo"><span class="lg">CLIN</span><span class="lw"> – </span><span class="lg">DERM</span></div>
+  <div class="tdiv"></div>
+  <div class="tb-brand"><div class="tb-title">Dashboard Financiero</div><div class="tb-sub">Dra. Tania de la Vega · 2026</div></div>
+  <div class="pchip" id="pchip">Ene – Abr 2026</div>
+</div>
+<div class="filterbar">
+  <span class="flbl">Mes</span>
+  <select class="fsel" id="sel-mes" onchange="updateAll()">
+    <option value="TODOS">Todos los meses</option>
+    <option value="ENERO">Enero</option>
+    <option value="FEBRERO">Febrero</option>
+    <option value="MARZO">Marzo</option>
+    <option value="ABRIL">Abril</option>
+    <option value="MAYO">Mayo</option>
+  </select>
+  <div class="fsep"></div>
+  <span class="flbl">Área</span>
+  <select class="fsel" id="sel-area" onchange="updateAll()">
+    <option value="TODOS">Todas las áreas</option>
+    <option value="CLINICA">Clínica Polanco</option>
+    <option value="FARM_POL">Farmacia Polanco</option>
+    <option value="FARM_MER">Farmacia Mérida</option>
+  </select>
+</div>
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tbn active" onclick="showTab('resumen',this)">Resumen</button>
+    <button class="tbn" onclick="showTab('productividad',this)">Productividad</button>
+    <button class="tbn" onclick="showTab('farmacia',this)">Farmacia</button>
+    <button class="tbn" onclick="showTab('gastos',this)">Gastos</button>
+    <button class="tbn" onclick="showTab('margenes',this)">Márgenes</button>
+    <button class="tbn" onclick="showTab('pagos',this)">Medios de Pago</button>
+  </div>
+</div>
+<div class="content">
+
+<!-- RESUMEN -->
+<div id="tab-resumen" class="tab-panel active">
+  <div class="kpi-grid" id="kpi-resumen"></div>
+  <div class="disc">⚠ Las cifras reflejan el <strong>&nbsp;margen bruto&nbsp;</strong> — ingresos totales menos gastos operativos registrados. No incluye impuestos, retenciones fiscales ni otras deducciones. Los cálculos definitivos deben ser validados por el contador de la clínica.</div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Ingresos por área / mes</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#8DC63F"></span>Clínica</span><span class="li"><span class="ld" style="background:#5a8a1f"></span>Farm. Polanco</span><span class="li"><span class="ld" style="background:#c5e68a"></span>Farm. Mérida</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="r1" role="img" aria-label="Ingresos por área y mes">Ingresos por área y mes.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Composición de ingresos</div>
+      <div class="cwrap" style="height:265px"><canvas id="r2" role="img" aria-label="Composición ingresos">Composición de ingresos.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Ingresos totales, Gastos totales, Margen bruto y Ahorro</div>
+      <div class="leg">
+        <span class="li"><span class="ld ln" style="background:#8DC63F"></span>Ingresos</span>
+        <span class="li"><span class="ld ln" style="background:#E24B4A"></span>Gastos</span>
+        <span class="li"><span class="ld ln" style="background:#378ADD"></span>Margen bruto</span>
+        <span class="li"><span class="ld ln" style="background:#EF9F27;border-style:dashed"></span>Ahorro 10%</span>
+      </div>
+      <div class="cwrap" style="height:250px"><canvas id="r3" role="img" aria-label="Tendencial ingresos gastos margen">Tendencial ingresos, gastos y margen.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Ingresos por área</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#8DC63F"></span>Clínica</span><span class="li"><span class="ld ln" style="background:#5a8a1f"></span>Farm. Polanco</span><span class="li"><span class="ld ln" style="background:#c5e68a"></span>Farm. Mérida</span></div>
+      <div class="cwrap" style="height:210px"><canvas id="r4" role="img" aria-label="Tendencial ingresos por área">Tendencial por área.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Gastos por cuenta</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#5a8a1f"></span>Polanco</span><span class="li"><span class="ld ln" style="background:#8DC63F"></span>F.Polanco</span><span class="li"><span class="ld ln" style="background:#EF9F27"></span>F.Mérida</span><span class="li"><span class="ld ln" style="background:#B4B2A9"></span>Mérida</span></div>
+      <div class="cwrap" style="height:210px"><canvas id="r5" role="img" aria-label="Tendencial gastos por cuenta">Tendencial gastos.</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTIVIDAD -->
+<div id="tab-productividad" class="tab-panel">
+  <div class="kpi-grid" id="kpi-prod"></div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Ingresos por tipo de servicio / mes</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#8DC63F"></span>Consultas</span><span class="li"><span class="ld" style="background:#5a8a1f"></span>Procedimientos</span><span class="li"><span class="ld" style="background:#c5e68a"></span>Inyectables</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="p1" role="img" aria-label="Productividad por tipo">Productividad por tipo.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Mix de servicios</div>
+      <div class="cwrap" style="height:265px"><canvas id="p2" role="img" aria-label="Mix de servicios">Mix de servicios.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Productividad clínica por tipo de servicio</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#8DC63F"></span>Consultas</span><span class="li"><span class="ld ln" style="background:#5a8a1f"></span>Procedimientos</span><span class="li"><span class="ld ln" style="background:#c5e68a"></span>Inyectables</span></div>
+      <div class="cwrap" style="height:220px"><canvas id="p3" role="img" aria-label="Tendencial productividad">Tendencial productividad.</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- FARMACIA -->
+<div id="tab-farmacia" class="tab-panel">
+  <div class="kpi-grid" id="kpi-farm"></div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Farmacia Polanco — Ingresos vs Gastos</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#8DC63F"></span>Ingresos</span><span class="li"><span class="ld" style="background:#E24B4A"></span>Gastos</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="f1" role="img" aria-label="Farmacia Polanco">Farm. Polanco.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Farmacia Mérida — Ingresos vs Gastos</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#8DC63F"></span>Ingresos</span><span class="li"><span class="ld" style="background:#E24B4A"></span>Gastos</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="f2" role="img" aria-label="Farmacia Mérida">Farm. Mérida.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Margen por farmacia</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#8DC63F"></span>Farm. Polanco</span><span class="li"><span class="ld ln" style="background:#EF9F27"></span>Farm. Mérida</span></div>
+      <div class="cwrap" style="height:210px"><canvas id="f3" role="img" aria-label="Margen farmacias">Margen farmacias.</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- GASTOS -->
+<div id="tab-gastos" class="tab-panel">
+  <div class="kpi-grid" id="kpi-gas"></div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Gastos por cuenta / mes</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#5a8a1f"></span>Polanco</span><span class="li"><span class="ld" style="background:#8DC63F"></span>F.Polanco</span><span class="li"><span class="ld" style="background:#EF9F27"></span>F.Mérida</span><span class="li"><span class="ld" style="background:#B4B2A9"></span>Mérida</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="g1" role="img" aria-label="Gastos por cuenta">Gastos por cuenta.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Clasificación de gastos</div>
+      <div class="cwrap" style="height:265px"><canvas id="g2" role="img" aria-label="Clasificacion gastos">Clasificación gastos.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Gastos operativos por cuenta</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#5a8a1f"></span>Polanco</span><span class="li"><span class="ld ln" style="background:#B4B2A9"></span>Mérida</span></div>
+      <div class="cwrap" style="height:210px"><canvas id="g3" role="img" aria-label="Tendencial gastos">Tendencial gastos operativos.</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- MÁRGENES -->
+<div id="tab-margenes" class="tab-panel">
+  <div class="kpi-grid" id="kpi-mar"></div>
+  <div class="disc">⚠ Margen bruto = ingresos totales menos gastos operativos. De éste se retiene un 10% como ahorro y el 90% restante queda disponible para retiro de socios, <em>antes</em> de impuestos y retenciones calculadas por el contador.</div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Distribución del margen bruto</div>
+      <div class="dist-grid" id="dist-boxes"></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Margen bruto, Ahorro 10% y Retiro socios 90%</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#8DC63F"></span>Margen bruto</span><span class="li"><span class="ld ln" style="background:#EF9F27"></span>Ahorro 10%</span><span class="li"><span class="ld ln" style="background:#378ADD"></span>Retiro socios 90%</span></div>
+      <div class="cwrap" style="height:240px"><canvas id="m1" role="img" aria-label="Tendencial margen y distribución">Tendencial margen y distribución.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Margen bruto por área / mes</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#8DC63F"></span>Clínica</span><span class="li"><span class="ld" style="background:#5a8a1f"></span>F.Polanco</span><span class="li"><span class="ld" style="background:#EF9F27"></span>F.Mérida</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="m2" role="img" aria-label="Margen por área">Margen por área.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">% de margen bruto por área</div>
+      <div class="pbar-grid" id="pbar-area"></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Detalle de márgenes por mes y área</div>
+      <div style="overflow-x:auto"><table class="mtable"><thead><tr id="mar-thead"></tr></thead><tbody id="mar-tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- MEDIOS DE PAGO -->
+<div id="tab-pagos" class="tab-panel">
+  <div class="kpi-grid" id="kpi-pagos"></div>
+  <div class="chart-row">
+    <div class="cbox">
+      <div class="ctitle">Distribución por medio de pago</div>
+      <div class="cwrap" style="height:290px"><canvas id="pg1" role="img" aria-label="Distribución medios de pago">Distribución medios de pago.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="ctitle">Ingresos por medio de pago</div>
+      <div class="cwrap" style="height:290px"><canvas id="pg2" role="img" aria-label="Ingresos por medio de pago">Ingresos por medio de pago.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Tendencial — Ingresos por medio de pago</div>
+      <div class="leg"><span class="li"><span class="ld ln" style="background:#8DC63F"></span>Banorte</span><span class="li"><span class="ld ln" style="background:#378ADD"></span>AMEX</span><span class="li"><span class="ld ln" style="background:#EF9F27"></span>Efectivo</span><span class="li"><span class="ld ln" style="background:#B4B2A9"></span>Transferencia</span><span class="li"><span class="ld ln" style="background:#5a8a1f"></span>Proc. Pagado</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="pg3" role="img" aria-label="Tendencial medios de pago">Tendencial medios de pago.</canvas></div>
+    </div>
+  </div>
+  <div class="chart-row full">
+    <div class="cbox">
+      <div class="ctitle">Mix de medios de pago por mes</div>
+      <div class="leg"><span class="li"><span class="ld" style="background:#8DC63F"></span>Banorte</span><span class="li"><span class="ld" style="background:#378ADD"></span>AMEX</span><span class="li"><span class="ld" style="background:#EF9F27"></span>Efectivo</span><span class="li"><span class="ld" style="background:#B4B2A9"></span>Transferencia</span><span class="li"><span class="ld" style="background:#5a8a1f"></span>Proc. Pagado</span></div>
+      <div class="cwrap" style="height:230px"><canvas id="pg4" role="img" aria-label="Mix medios de pago por mes">Mix medios de pago.</canvas></div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script>
+Chart.register(ChartDataLabels);
+const MESES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO'];
+const MS={ENERO:'Ene',FEBRERO:'Feb',MARZO:'Mar',ABRIL:'Abr',MAYO:'May'};
+const ML={TODOS:'Ene – May 2026',ENERO:'Enero 2026',FEBRERO:'Febrero 2026',MARZO:'Marzo 2026',ABRIL:'Abril 2026',MAYO:'Mayo 2026'};
+
+const RAW={
+  prod:{
+    CONSULTAS:     {ENERO:65100,  FEBRERO:69000,  MARZO:56950,  ABRIL:44650,  MAYO:88450},
+    PROCEDIMIENTOS:{ENERO:248065, FEBRERO:253170, MARZO:188290, ABRIL:207590, MAYO:241850},
+    INYECTABLES:   {ENERO:187700, FEBRERO:80350,  MARZO:126755, ABRIL:49900,  MAYO:307700}
+  },
+  ingFP:{ENERO:247548,FEBRERO:207085,MARZO:230714,ABRIL:126009.5,MAYO:288882.5},
+  ingFM:{ENERO:203831,FEBRERO:188032,MARZO:233097.5,ABRIL:157221.18,MAYO:222272.5},
+  gasFP:{ENERO:66859.66,FEBRERO:251583.42,MARZO:177094.68,ABRIL:92264.46,MAYO:265790.95},
+  gasFM:{ENERO:250699.91,FEBRERO:156289.97,MARZO:341780.15,ABRIL:79718.26,MAYO:87558.28},
+  gasPOL:{ENERO:188791.17,FEBRERO:43231.78,MARZO:206064.14,ABRIL:184694.17,MAYO:146975.09},
+  gasMER:{ENERO:0,FEBRERO:96295,MARZO:24758.52,ABRIL:105934.76,MAYO:113831.14},
+  gasClas:{
+    ENERO:{'Farm. Mérida':159187.41,'Farm. Polanco':66859.66,'Locativos':154721.95,'Nómina':62111.88,'Operacional':3587.07,'Seg. Social':26530.77,'Tributarios':29752,'Caja chica':3600},
+    FEBRERO:{'Farm. Mérida':156289.97,'Farm. Polanco':251583.42,'Locativos':1614,'Nómina':67990.3,'Operacional':69922.48},
+    MARZO:{'Farm. Mérida':295555.75,'Farm. Polanco':218593.83,'Locativos':32483.5,'Nómina':72715.55,'Operacional':91385.01,'Seg. Social':35463.85,'Caja chica':3500},
+    ABRIL:{'Farm. Mérida':79718.26,'Farm. Polanco':92264.46,'Locativos':34271.48,'Nómina':73521.34,'Operacional':168742.49,'Seg. Social':12011.62,'Tesorería':2082},
+    MAYO:{'Farm. Mérida':87558.28,'Farm. Polanco':265790.95,'Locativos':2662,'Nómina':68620.86,'Operacional':161446.37,'Tributarios':24077,'Bonos':4000}
+  },
+  pagos:{
+    BANORTE:      {ENERO:307215,   FEBRERO:281270,   MARZO:237265,   ABRIL:233553.98, MAYO:410600},
+    AMEX:         {ENERO:115300,   FEBRERO:49350,    MARZO:53050,    ABRIL:19900,     MAYO:117030},
+    EFECTIVO:     {ENERO:63350,    FEBRERO:44600,    MARZO:73680,    ABRIL:37990,     MAYO:84220},
+    TRANSFERENCIA:{ENERO:15000,    FEBRERO:27300,    MARZO:5800,     ABRIL:10696.02,  MAYO:25300},
+    PROC_PAGADO:  {ENERO:0,        FEBRERO:0,        MARZO:2200,     ABRIL:0,         MAYO:850}
+  }
+};
+
+let charts={};
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function fmt(v){if(v==null)return'—';const neg=v<0,a=Math.abs(v),s=neg?'-':'';return s+'$'+Math.round(a).toLocaleString('es-MX');}
+function fmtK(v){if(!v||v===0)return'';const a=Math.abs(v),s=v<0?'-':'';if(a>=1000000)return s+'$'+(a/1000000).toFixed(1)+'M';if(a>=1000)return s+'$'+Math.round(a/1000)+'K';return s+'$'+Math.round(a);}
+function pct(v,t){return t?(v/t*100).toFixed(1)+'%':'—';}
+function selMes(){return document.getElementById('sel-mes').value;}
+function selArea(){return document.getElementById('sel-area').value;}
+function activeMeses(){const m=selMes();return m==='TODOS'?MESES:[m];}
+function mkChart(id,cfg){if(charts[id]){charts[id].destroy();delete charts[id];}const el=document.getElementById(id);if(el)charts[id]=new Chart(el,cfg);}
+function showTab(id,btn){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tbn').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');}
+
+const tickY=v=>{const a=Math.abs(v);return(v<0?'-':'')+'$'+(a>=1000?(a/1000).toFixed(0)+'K':a);};
+const dlBar={display:ctx=>Math.abs(ctx.dataset.data[ctx.dataIndex]||0)>5000,anchor:'end',align:'end',formatter:v=>fmtK(v),font:{size:9,family:'DM Sans',weight:'600'},color:'#444',padding:2};
+const dlSt={display:ctx=>{const v=ctx.dataset.data[ctx.dataIndex];return v&&Math.abs(v)>15000;},anchor:'center',align:'center',formatter:v=>fmtK(v),font:{size:9,family:'DM Sans',weight:'600'},color:'#fff',padding:1};
+const dlDo={display:ctx=>{const ds=ctx.dataset.data,t=ds.reduce((a,b)=>a+b,0);return ds[ctx.dataIndex]/t>0.04;},formatter:(v,ctx)=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return(v/t*100).toFixed(1)+'%';},font:{size:11,family:'DM Sans',weight:'600'},color:'#fff'};
+const dlLn={display:true,anchor:'top',align:'top',formatter:v=>fmtK(v),font:{size:9,family:'DM Sans',weight:'600'},padding:4};
+
+function bGroupOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBar,tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,family:'DM Sans'}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11,family:'DM Sans'},callback:tickY}}}};}
+function bStackOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlSt,tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11,family:'DM Sans'}}},y:{stacked:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11,family:'DM Sans'},callback:tickY}}}};}
+function lnOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlLn,tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,family:'DM Sans'}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11,family:'DM Sans'},callback:tickY}}}};}
+function mkLine(color,data,dlColor){return{borderColor:color,backgroundColor:'transparent',tension:0.4,pointRadius:5,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,data,datalabels:{...dlLn,color:dlColor||color}};}
+
+function kpiH(lbl,val,sub,cls){
+  let vc='';
+  if(typeof val==='string'&&val.startsWith('-'))vc='neg';
+  else if(cls==='pos')vc='pos';else if(cls==='amber')vc='amber';else if(cls==='blue')vc='blue';
+  return`<div class="kpi ${cls||''}"><div class="kpi-lbl">${lbl}</div><div class="kpi-val ${vc}">${val}</div><div class="kpi-sub">${sub}</div></div>`;
+}
+
+function updateAll(){
+  const mes=selMes(),area=selArea(),meses=activeMeses(),labels=meses.map(m=>MS[m]);
+  document.getElementById('pchip').textContent=ML[mes];
+
+  const prodCons=meses.map(m=>RAW.prod.CONSULTAS[m]||0);
+  const prodProc=meses.map(m=>RAW.prod.PROCEDIMIENTOS[m]||0);
+  const prodInj =meses.map(m=>RAW.prod.INYECTABLES[m]||0);
+  const prodTot =meses.map((_,i)=>prodCons[i]+prodProc[i]+prodInj[i]);
+  const ingFP  =meses.map(m=>RAW.ingFP[m]||0);
+  const ingFM  =meses.map(m=>RAW.ingFM[m]||0);
+  const gasFP  =meses.map(m=>RAW.gasFP[m]||0);
+  const gasFM  =meses.map(m=>RAW.gasFM[m]||0);
+  const gasPOL =meses.map(m=>RAW.gasPOL[m]||0);
+  const gasMER =meses.map(m=>RAW.gasMER[m]||0);
+  const ingTotArr=meses.map((_,i)=>prodTot[i]+ingFP[i]+ingFM[i]);
+  const gasTotArr=meses.map((_,i)=>gasFP[i]+gasFM[i]+gasPOL[i]+gasMER[i]);
+  const brutArr=ingTotArr.map((v,i)=>v-gasTotArr[i]);
+  const ahorArr=brutArr.map(v=>Math.max(0,v)*0.1);
+  const retiArr=brutArr.map(v=>Math.max(0,v)*0.9);
+  const marFP=ingFP.map((v,i)=>v-gasFP[i]);
+  const marFM=ingFM.map((v,i)=>v-gasFM[i]);
+  const marCl=prodTot.map((v,i)=>v-gasPOL[i]);
+  const marCon=marCl.map((v,i)=>v+marFP[i]+marFM[i]);
+
+  let ingArr=[],gasArr=[];
+  meses.forEach((_,i)=>{
+    let ing=0,gas=0;
+    if(area==='TODOS'||area==='CLINICA'){ing+=prodTot[i];gas+=gasPOL[i];}
+    if(area==='TODOS'){gas+=gasMER[i];}
+    if(area==='TODOS'||area==='FARM_POL'){ing+=ingFP[i];gas+=gasFP[i];}
+    if(area==='TODOS'||area==='FARM_MER'){ing+=ingFM[i];gas+=gasFM[i];}
+    ingArr.push(ing);gasArr.push(gas);
+  });
+
+  const sTotIngFull=sum(ingTotArr),sTotGasFull=sum(gasTotArr);
+  const sTotBrutFull=sum(brutArr);
+  // Totales filtrados por área (para KPIs de Resumen, Márgenes, etc.)
+  const sTotIng=sum(ingArr),sTotGas=sum(gasArr);
+  const sTotBrut=sTotIng-sTotGas,sTotAhor=Math.max(0,sTotBrut)*0.1,sTotReti=Math.max(0,sTotBrut)*0.9;
+  const sTotProd=sum(prodTot),sTotFP=sum(ingFP),sTotFM=sum(ingFM);
+  const sGasFP=sum(gasFP),sGasFM=sum(gasFM),sGasPOL=sum(gasPOL),sGasMER=sum(gasMER),sGasTot=sGasFP+sGasFM+sGasPOL+sGasMER;
+  const sMarFP=sum(marFP),sMarFM=sum(marFM),sMarCl=sum(marCl),sMarCon=sum(marCon);
+  const sCons=sum(prodCons),sProc=sum(prodProc),sInj=sum(prodInj);
+  let clasTot={};meses.forEach(m=>{Object.entries(RAW.gasClas[m]||{}).forEach(([k,v])=>{clasTot[k]=(clasTot[k]||0)+v;});});
+  const pBan=meses.map(m=>RAW.pagos.BANORTE[m]||0);
+  const pAmx=meses.map(m=>RAW.pagos.AMEX[m]||0);
+  const pEfx=meses.map(m=>RAW.pagos.EFECTIVO[m]||0);
+  const pTrn=meses.map(m=>RAW.pagos.TRANSFERENCIA[m]||0);
+  const pPro=meses.map(m=>RAW.pagos.PROC_PAGADO[m]||0);
+  const sBan=sum(pBan),sAmx=sum(pAmx),sEfx=sum(pEfx),sTrn=sum(pTrn),sPro=sum(pPro),sPagTot=sBan+sAmx+sEfx+sTrn+sPro;
+
+  // === KPIs RESUMEN ===
+  let kr=kpiH('Ingresos totales',fmt(sTotIng),meses.length+' mes(es)','')
+        +kpiH('Gastos totales',fmt(sTotGas),'Todas las cuentas','neg')
+        +kpiH('Margen bruto',fmt(sTotBrut),pct(sTotBrut,sTotIng)+' del ingreso',sTotBrut<0?'neg':'')
+        +kpiH('Ahorro (10%)',fmt(sTotAhor),'Reserva operativa','warn')
+        +kpiH('Retiro socios (90%)',fmt(sTotReti),'Antes de imp. y ret.','blue');
+  if(area==='TODOS'||area==='CLINICA')  kr+=kpiH('Productividad clínica',fmt(sTotProd),pct(sTotProd,sTotIng)+' del total','');
+  if(area==='TODOS'||area==='FARM_POL')kr+=kpiH('Farm. Polanco',fmt(sTotFP),pct(sTotFP,sTotIng)+' del total','');
+  if(area==='TODOS'||area==='FARM_MER')kr+=kpiH('Farm. Mérida',fmt(sTotFM),pct(sTotFM,sTotIng)+' del total','');
+  document.getElementById('kpi-resumen').innerHTML=kr;
+
+  // R1 stacked
+  const r1ds=[];
+  if(area==='TODOS'||area==='CLINICA')  r1ds.push({label:'Clínica',data:prodTot,backgroundColor:'#8DC63F'});
+  if(area==='TODOS'||area==='FARM_POL')r1ds.push({label:'Farm. Polanco',data:ingFP,backgroundColor:'#5a8a1f'});
+  if(area==='TODOS'||area==='FARM_MER')r1ds.push({label:'Farm. Mérida',data:ingFM,backgroundColor:'#c5e68a'});
+  mkChart('r1',{type:'bar',data:{labels,datasets:r1ds},options:bStackOpts()});
+
+  // R2 donut
+  const r2l=[],r2d=[],r2c=[];
+  if(area==='TODOS'||area==='CLINICA') {r2l.push('Clínica');r2d.push(sTotProd);r2c.push('#8DC63F');}
+  if(area==='TODOS'||area==='FARM_POL'){r2l.push('Farm. Polanco');r2d.push(sTotFP);r2c.push('#5a8a1f');}
+  if(area==='TODOS'||area==='FARM_MER'){r2l.push('Farm. Mérida');r2d.push(sTotFM);r2c.push('#c5e68a');}
+  mkChart('r2',{type:'doughnut',data:{labels:r2l,datasets:[{data:r2d,backgroundColor:r2c,borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:12,padding:12}},datalabels:dlDo,tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.parsed)}}}}});
+
+  // R3 tendencial macro
+  const allIng=MESES.map(m=>RAW.prod.CONSULTAS[m]+RAW.prod.PROCEDIMIENTOS[m]+RAW.prod.INYECTABLES[m]+RAW.ingFP[m]+RAW.ingFM[m]);
+  const allGas=MESES.map(m=>(RAW.gasFP[m]||0)+(RAW.gasFM[m]||0)+(RAW.gasPOL[m]||0)+(RAW.gasMER[m]||0));
+  const allBrut=allIng.map((v,i)=>v-allGas[i]);
+  const allAhor=allBrut.map(v=>Math.max(0,v)*0.1);
+  const allLabels=MESES.map(m=>MS[m]);
+  mkChart('r3',{type:'line',data:{labels:allLabels,datasets:[
+    {...mkLine('#8DC63F',allIng,'#5a8a1f'),label:'Ingresos',backgroundColor:'rgba(141,198,63,0.05)',fill:true},
+    {...mkLine('#E24B4A',allGas,'#A32D2D'),label:'Gastos',backgroundColor:'rgba(226,75,74,0.04)',fill:true},
+    {...mkLine('#378ADD',allBrut,'#0C447C'),label:'Margen bruto'},
+    {...mkLine('#EF9F27',allAhor,'#633806'),label:'Ahorro 10%',borderDash:[5,4]}
+  ]},options:lnOpts()});
+
+  // R4 tendencial ingresos área
+  const allProd=MESES.map(m=>RAW.prod.CONSULTAS[m]+RAW.prod.PROCEDIMIENTOS[m]+RAW.prod.INYECTABLES[m]);
+  mkChart('r4',{type:'line',data:{labels:allLabels,datasets:[
+    {...mkLine('#8DC63F',allProd,'#5a8a1f'),label:'Clínica'},
+    {...mkLine('#5a8a1f',MESES.map(m=>RAW.ingFP[m]),'#3B6D11'),label:'Farm. Polanco'},
+    {...mkLine('#c5e68a',MESES.map(m=>RAW.ingFM[m]),'#5a8a1f'),label:'Farm. Mérida'}
+  ]},options:lnOpts()});
+
+  // R5 tendencial gastos cuenta
+  mkChart('r5',{type:'line',data:{labels:allLabels,datasets:[
+    {...mkLine('#5a8a1f',MESES.map(m=>RAW.gasPOL[m]||0),'#3B6D11'),label:'Polanco'},
+    {...mkLine('#8DC63F',MESES.map(m=>RAW.gasFP[m]||0),'#5a8a1f'),label:'F.Polanco'},
+    {...mkLine('#EF9F27',MESES.map(m=>RAW.gasFM[m]||0),'#633806'),label:'F.Mérida'},
+    {...mkLine('#B4B2A9',MESES.map(m=>RAW.gasMER[m]||0),'#555'),label:'Mérida'}
+  ]},options:lnOpts()});
+
+  // === KPIs PROD ===
+  document.getElementById('kpi-prod').innerHTML=
+    kpiH('Total clínica',fmt(sTotProd),meses.length+' mes(es)','')
+   +kpiH('Consultas',fmt(sCons),pct(sCons,sTotProd),'')
+   +kpiH('Procedimientos',fmt(sProc),pct(sProc,sTotProd),'')
+   +kpiH('Inyectables',fmt(sInj),pct(sInj,sTotProd),'');
+
+  mkChart('p1',{type:'bar',data:{labels,datasets:[
+    {label:'Consultas',data:prodCons,backgroundColor:'#8DC63F'},
+    {label:'Procedimientos',data:prodProc,backgroundColor:'#5a8a1f'},
+    {label:'Inyectables',data:prodInj,backgroundColor:'#c5e68a'}
+  ]},options:bStackOpts()});
+  mkChart('p2',{type:'doughnut',data:{labels:['Consultas','Procedimientos','Inyectables'],datasets:[{data:[sCons,sProc,sInj],backgroundColor:['#8DC63F','#5a8a1f','#c5e68a'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:12,padding:12}},datalabels:dlDo,tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.parsed)}}}}});
+  mkChart('p3',{type:'line',data:{labels,datasets:[
+    {...mkLine('#8DC63F',prodCons,'#5a8a1f'),label:'Consultas'},
+    {...mkLine('#5a8a1f',prodProc,'#3B6D11'),label:'Procedimientos'},
+    {...mkLine('#c5e68a',prodInj,'#5a8a1f'),label:'Inyectables'}
+  ]},options:lnOpts()});
+
+  // === KPIs FARMACIA ===
+  let kf='';
+  if(area==='TODOS'||area==='FARM_POL'){kf+=kpiH('Ing. Farm. Polanco',fmt(sTotFP),meses.length+' mes(es)','');kf+=kpiH('Gasto Farm. Polanco',fmt(sGasFP),'Costo mercancía','neg');}
+  if(area==='TODOS'||area==='FARM_MER'){kf+=kpiH('Ing. Farm. Mérida',fmt(sTotFM),meses.length+' mes(es)','');kf+=kpiH('Gasto Farm. Mérida',fmt(sGasFM),'Costo mercancía','neg');}
+  if(area==='TODOS'||area==='FARM_POL')kf+=kpiH('Margen Farm. Polanco',fmt(sMarFP),pct(sMarFP,sTotFP),sMarFP<0?'neg':'');
+  if(area==='TODOS'||area==='FARM_MER')kf+=kpiH('Margen Farm. Mérida',fmt(sMarFM),pct(sMarFM,sTotFM),sMarFM<0?'neg':'');
+  document.getElementById('kpi-farm').innerHTML=kf;
+
+  mkChart('f1',{type:'bar',data:{labels,datasets:[{label:'Ingresos',data:ingFP,backgroundColor:'#8DC63F',datalabels:{...dlBar,color:'#3B6D11'}},{label:'Gastos',data:gasFP,backgroundColor:'#E24B4A',datalabels:{...dlBar,color:'#A32D2D'}}]},options:bGroupOpts()});
+  mkChart('f2',{type:'bar',data:{labels,datasets:[{label:'Ingresos',data:ingFM,backgroundColor:'#8DC63F',datalabels:{...dlBar,color:'#3B6D11'}},{label:'Gastos',data:gasFM,backgroundColor:'#E24B4A',datalabels:{...dlBar,color:'#A32D2D'}}]},options:bGroupOpts()});
+  mkChart('f3',{type:'line',data:{labels,datasets:[{...mkLine('#8DC63F',marFP,'#5a8a1f'),label:'Farm. Polanco'},{...mkLine('#EF9F27',marFM,'#633806'),label:'Farm. Mérida'}]},options:lnOpts()});
+
+  // === KPIs GASTOS ===
+  let kg=kpiH('Total gastos',fmt(sGasTot),meses.length+' mes(es)','neg');
+  if(area==='TODOS'||area==='FARM_POL')kg+=kpiH('Mercancía F.Polanco',fmt(sGasFP),pct(sGasFP,sGasTot),'neg');
+  if(area==='TODOS'||area==='FARM_MER')kg+=kpiH('Mercancía F.Mérida',fmt(sGasFM),pct(sGasFM,sGasTot),'neg');
+  if(area==='TODOS'||area==='CLINICA') kg+=kpiH('Operativos Polanco',fmt(sGasPOL),pct(sGasPOL,sGasTot),'neg');
+  if(area==='TODOS')                   kg+=kpiH('Operativos Mérida',fmt(sGasMER),pct(sGasMER,sGasTot),'neg');
+  kg+=kpiH('Nómina',fmt(clasTot['Nómina']||0),pct(clasTot['Nómina']||0,sGasTot),'warn');
+  document.getElementById('kpi-gas').innerHTML=kg;
+
+  mkChart('g1',{type:'bar',data:{labels,datasets:[
+    {label:'Polanco',data:gasPOL,backgroundColor:'#5a8a1f'},
+    {label:'F.Polanco',data:gasFP,backgroundColor:'#8DC63F'},
+    {label:'F.Mérida',data:gasFM,backgroundColor:'#EF9F27'},
+    {label:'Mérida',data:gasMER,backgroundColor:'#B4B2A9'}
+  ]},options:bStackOpts()});
+  const ck=Object.keys(clasTot);
+  const cc=['#EF9F27','#8DC63F','#E24B4A','#378ADD','#B4B2A9','#BA7517','#c5e68a','#639922'];
+  mkChart('g2',{type:'doughnut',data:{labels:ck,datasets:[{data:ck.map(k=>clasTot[k]),backgroundColor:cc.slice(0,ck.length),borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10,family:'DM Sans'},boxWidth:10,padding:10}},datalabels:dlDo,tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.parsed)}}}}});
+  mkChart('g3',{type:'line',data:{labels,datasets:[{...mkLine('#5a8a1f',gasPOL,'#3B6D11'),label:'Polanco'},{...mkLine('#B4B2A9',gasMER,'#555'),label:'Mérida'}]},options:lnOpts()});
+
+  // === KPIs MÁRGENES ===
+  let km='';
+  if(area==='TODOS'||area==='CLINICA') km+=kpiH('Margen Clínica',fmt(sMarCl),pct(sMarCl,sTotProd),sMarCl<0?'neg':'');
+  if(area==='TODOS'||area==='FARM_POL')km+=kpiH('Margen Farm. Polanco',fmt(sMarFP),pct(sMarFP,sTotFP),sMarFP<0?'neg':'');
+  if(area==='TODOS'||area==='FARM_MER')km+=kpiH('Margen Farm. Mérida',fmt(sMarFM),pct(sMarFM,sTotFM),sMarFM<0?'neg':'');
+  km+=kpiH('Margen bruto consolidado',fmt(sTotBrut),pct(sTotBrut,sTotIng),sTotBrut<0?'neg':'')
+     +kpiH('Ahorro (10%)',fmt(sTotAhor),'Reserva operativa','warn')
+     +kpiH('Retiro socios (90%)',fmt(sTotReti),'Antes de imp. y ret.','blue');
+  document.getElementById('kpi-mar').innerHTML=km;
+
+  document.getElementById('dist-boxes').innerHTML=`
+    <div class="dbox g"><div class="dlbl g">Margen bruto</div><div class="dval g">${fmt(sTotBrut)}</div><div class="dsub">${pct(sTotBrut,sTotIng)} sobre ingresos</div></div>
+    <div class="dbox a"><div class="dlbl a">Ahorro — 10%</div><div class="dval a">${fmt(sTotAhor)}</div><div class="dsub">Reserva operativa</div></div>
+    <div class="dbox b"><div class="dlbl b">Retiro socios — 90%</div><div class="dval b">${fmt(sTotReti)}</div><div class="dsub">Antes de impuestos y retenciones</div></div>`;
+
+  const allMarBrut=MESES.map(m=>{const i=RAW.prod.CONSULTAS[m]+RAW.prod.PROCEDIMIENTOS[m]+RAW.prod.INYECTABLES[m]+RAW.ingFP[m]+RAW.ingFM[m];const g=(RAW.gasFP[m]||0)+(RAW.gasFM[m]||0)+(RAW.gasPOL[m]||0)+(RAW.gasMER[m]||0);return i-g;});
+  const allAhorBrut=allMarBrut.map(v=>Math.max(0,v)*0.1);
+  const allRetiBrut=allMarBrut.map(v=>Math.max(0,v)*0.9);
+  mkChart('m1',{type:'line',data:{labels:allLabels,datasets:[
+    {...mkLine('#8DC63F',allMarBrut,'#5a8a1f'),label:'Margen bruto',backgroundColor:'rgba(141,198,63,0.07)',fill:true},
+    {...mkLine('#EF9F27',allAhorBrut,'#633806'),label:'Ahorro 10%',borderDash:[5,4]},
+    {...mkLine('#378ADD',allRetiBrut,'#0C447C'),label:'Retiro socios 90%',borderDash:[3,3]}
+  ]},options:lnOpts()});
+
+  mkChart('m2',{type:'bar',data:{labels,datasets:[
+    {label:'Clínica Polanco',data:marCl,backgroundColor:'#8DC63F',datalabels:{...dlBar,color:'#3B6D11'}},
+    {label:'Farm. Polanco',data:marFP,backgroundColor:marFP.map(v=>v>=0?'#5a8a1f':'#E24B4A'),datalabels:{...dlBar,color:ctx=>marFP[ctx.dataIndex]>=0?'#3B6D11':'#A32D2D'}},
+    {label:'Farm. Mérida',data:marFM,backgroundColor:marFM.map(v=>v>=0?'#EF9F27':'#E24B4A'),datalabels:{...dlBar,color:ctx=>marFM[ctx.dataIndex]>=0?'#633806':'#A32D2D'}}
+  ]},options:bGroupOpts()});
+
+  const pbAs=[];
+  if(area==='TODOS'||area==='CLINICA') pbAs.push({l:'Clínica Polanco',m:sMarCl,i:sTotProd});
+  if(area==='TODOS'||area==='FARM_POL')pbAs.push({l:'Farm. Polanco',m:sMarFP,i:sTotFP});
+  if(area==='TODOS'||area==='FARM_MER')pbAs.push({l:'Farm. Mérida',m:sMarFM,i:sTotFM});
+  pbAs.push({l:'Consolidado',m:sTotBrut,i:sTotIng});
+  document.getElementById('pbar-area').innerHTML=pbAs.map(a=>{
+    const p=a.i?(a.m/a.i*100):0,neg=p<0;
+    return`<div><div class="pbt"><span class="pbt-lbl">${a.l}</span><span class="pbt-pct" style="color:${neg?'#E24B4A':'#5a8a1f'}">${p.toFixed(1)}%</span></div><div class="pbtrack"><div class="pbfill${neg?' neg':''}" style="width:${Math.min(Math.abs(p),100)}%"></div></div></div>`;
+  }).join('');
+
+  document.getElementById('mar-thead').innerHTML='<th>Área</th>'+meses.map(m=>`<th>${MS[m]}</th>`).join('')+'<th>Total</th><th>% margen</th>';
+  const allRows=[
+    {label:'Clínica Polanco',sub:'Productividad − Gastos Polanco',vals:marCl,tot:sMarCl,base:sTotProd,a:'CLINICA'},
+    {label:'Farm. Polanco',sub:'Ingresos − Costo mercancía',vals:marFP,tot:sMarFP,base:sTotFP,a:'FARM_POL'},
+    {label:'Farm. Mérida',sub:'Ingresos − Costo mercancía',vals:marFM,tot:sMarFM,base:sTotFM,a:'FARM_MER'},
+    {label:'Consolidado bruto',sub:'Ahorro 10% + Retiro socios 90%',vals:marCon,tot:sMarCon,base:sTotIng,a:'ALL'}
+  ];
+  document.getElementById('mar-tbody').innerHTML=allRows.filter(r=>r.a==='ALL'||area==='TODOS'||r.a===area).map(r=>`<tr><td><strong>${r.label}</strong><div class="anote">${r.sub}</div></td>${r.vals.map(v=>`<td><span class="pill ${v>=0?'p':'n'}">${fmt(v)}</span></td>`).join('')}<td><strong>${fmt(r.tot)}</strong></td><td><strong>${pct(r.tot,r.base)}</strong></td></tr>`).join('');
+
+  // === KPIs PAGOS ===
+  document.getElementById('kpi-pagos').innerHTML=
+    kpiH('Total cobrado',fmt(sPagTot),meses.length+' mes(es)','')
+   +kpiH('Banorte (terminal)',fmt(sBan),pct(sBan,sPagTot),'')
+   +kpiH('AMEX',fmt(sAmx),pct(sAmx,sPagTot),'')
+   +kpiH('Efectivo',fmt(sEfx),pct(sEfx,sPagTot),'warn')
+   +kpiH('Transferencia',fmt(sTrn),pct(sTrn,sPagTot),'blue')
+   +(sPro>0?kpiH('Proc. pagado',fmt(sPro),pct(sPro,sPagTot),''):'');
+
+  mkChart('pg1',{type:'doughnut',data:{labels:['Banorte','AMEX','Efectivo','Transferencia','Proc. Pagado'],datasets:[{data:[sBan,sAmx,sEfx,sTrn,sPro],backgroundColor:['#8DC63F','#378ADD','#EF9F27','#B4B2A9','#5a8a1f'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:12,padding:12}},datalabels:dlDo,tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.parsed)}}}}});
+  mkChart('pg2',{type:'bar',data:{labels:['Banorte','AMEX','Efectivo','Transferencia','Proc. Pagado'],datasets:[{label:'Ingreso',data:[sBan,sAmx,sEfx,sTrn,sPro],backgroundColor:['#8DC63F','#378ADD','#EF9F27','#B4B2A9','#5a8a1f'],datalabels:{...dlBar}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBar,tooltip:{callbacks:{label:ctx=>fmt(ctx.parsed.y)}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,family:'DM Sans'}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11,family:'DM Sans'},callback:tickY}}}}});
+  mkChart('pg3',{type:'line',data:{labels,datasets:[
+    {...mkLine('#8DC63F',pBan,'#5a8a1f'),label:'Banorte'},
+    {...mkLine('#378ADD',pAmx,'#0C447C'),label:'AMEX'},
+    {...mkLine('#EF9F27',pEfx,'#633806'),label:'Efectivo'},
+    {...mkLine('#B4B2A9',pTrn,'#555'),label:'Transferencia'},
+    {...mkLine('#5a8a1f',pPro,'#3B6D11'),label:'Proc. Pagado'}
+  ]},options:lnOpts()});
+  mkChart('pg4',{type:'bar',data:{labels,datasets:[
+    {label:'Banorte',data:pBan,backgroundColor:'#8DC63F'},
+    {label:'AMEX',data:pAmx,backgroundColor:'#378ADD'},
+    {label:'Efectivo',data:pEfx,backgroundColor:'#EF9F27'},
+    {label:'Transferencia',data:pTrn,backgroundColor:'#B4B2A9'},
+    {label:'Proc. Pagado',data:pPro,backgroundColor:'#5a8a1f'}
+  ]},options:bStackOpts()});
+}
+
+document.addEventListener('DOMContentLoaded',updateAll);
+</script>
+</body>
+</html>
