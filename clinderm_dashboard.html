@@ -32,6 +32,9 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 .fsel{appearance:none;-webkit-appearance:none;padding:7px 34px 7px 14px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;border:1px solid var(--gray-200);border-radius:20px;background:var(--gray-50) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238DC63F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--text);cursor:pointer;min-width:160px;transition:border-color .15s}
 .fsel:hover,.fsel:focus{border-color:var(--green);outline:none}
 .fsep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.fchip{display:inline-block;font-size:10.5px;color:var(--text-muted);background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:4px 12px;margin-bottom:12px}
+.dr-na{font-size:10.5px;color:#A32D2D;background:rgba(226,75,74,0.08);border:1px solid rgba(226,75,74,0.25);border-radius:8px;padding:6px 12px;margin-bottom:12px;display:none}
+.dr-na.show{display:block}
 .tabs-wrap{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;position:sticky;top:108px;z-index:180}
 .tabs{display:flex;overflow-x:auto}
 .tbn{padding:13px 18px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;color:var(--text-muted);cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s,border-color .15s}
@@ -102,6 +105,7 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
     <option value="ABRIL">Abril</option>
     <option value="MAYO">Mayo</option>
     <option value="JUNIO">Junio</option>
+    <option value="JULIO">Julio</option>
   </select>
   <div class="fsep"></div>
   <span class="flbl">Área</span>
@@ -110,6 +114,17 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
     <option value="CLINICA">Clínica Polanco</option>
     <option value="FARM_POL">Farmacia Polanco</option>
     <option value="FARM_MER">Farmacia Mérida</option>
+  </select>
+  <div class="fsep"></div>
+  <span class="flbl">Dr</span>
+  <select class="fsel" id="sel-dr" onchange="updateAll()">
+    <option value="TODOS">Todos los médicos</option>
+    <option value="DE_LA_VEGA">Dra. de la Vega</option>
+    <option value="GALVAN">Dra. Galván</option>
+    <option value="BERENICE">Cosm. Berenice</option>
+    <option value="CAROLINA">Cosm. Carolina</option>
+    <option value="JENNY">Cosm. Jenny</option>
+    <option value="OTROS">Otros</option>
   </select>
 </div>
 <div class="tabs-wrap">
@@ -126,6 +141,7 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 
 <!-- RESUMEN -->
 <div id="tab-resumen" class="tab-panel active">
+  <div class="fchip">Mes: — · Dr: —</div>
   <div class="kpi-grid" id="kpi-resumen"></div>
   <div class="disc">⚠ Las cifras reflejan el <strong>&nbsp;margen bruto&nbsp;</strong> — ingresos totales menos gastos operativos registrados. No incluye impuestos, retenciones fiscales ni otras deducciones. Los cálculos definitivos deben ser validados por el contador de la clínica.</div>
   <div class="chart-row">
@@ -167,6 +183,7 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 
 <!-- PRODUCTIVIDAD -->
 <div id="tab-productividad" class="tab-panel">
+  <div class="fchip">Mes: — · Dr: —</div>
   <div class="kpi-grid" id="kpi-prod"></div>
   <div class="chart-row">
     <div class="cbox">
@@ -190,6 +207,8 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 
 <!-- FARMACIA -->
 <div id="tab-farmacia" class="tab-panel">
+  <div class="fchip">Mes: — · Dr: —</div>
+  <div class="dr-na" id="dr-na-farm">⚠ El filtro de médico no aplica a Farmacia — las ventas de farmacia no se registran por doctor. Mostrando el total.</div>
   <div class="kpi-grid" id="kpi-farm"></div>
   <div class="chart-row">
     <div class="cbox">
@@ -214,6 +233,8 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 
 <!-- GASTOS -->
 <div id="tab-gastos" class="tab-panel">
+  <div class="fchip">Mes: — · Dr: —</div>
+  <div class="dr-na" id="dr-na-gas">⚠ El filtro de médico no aplica a Gastos — los gastos operativos no se registran por doctor. Mostrando el total.</div>
   <div class="kpi-grid" id="kpi-gas"></div>
   <div class="chart-row">
     <div class="cbox">
@@ -237,6 +258,8 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 
 <!-- MÁRGENES -->
 <div id="tab-margenes" class="tab-panel">
+  <div class="fchip">Mes: — · Dr: —</div>
+  <div class="dr-na" id="dr-na-mar">⚠ El filtro de médico solo afecta el margen de la Clínica (productividad); Farmacia y Gastos operativos se muestran completos.</div>
   <div class="kpi-grid" id="kpi-mar"></div>
   <div class="disc">⚠ Margen bruto = ingresos totales menos gastos operativos. De éste se retiene un 10% como ahorro y el 90% restante queda disponible para retiro de socios, <em>antes</em> de impuestos y retenciones calculadas por el contador.</div>
   <div class="chart-row full">
@@ -273,6 +296,7 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 
 <!-- MEDIOS DE PAGO -->
 <div id="tab-pagos" class="tab-panel">
+  <div class="fchip">Mes: — · Dr: —</div>
   <div class="kpi-grid" id="kpi-pagos"></div>
   <div class="chart-row">
     <div class="cbox">
@@ -303,38 +327,116 @@ html,body{background:var(--gray-50);font-family:'DM Sans',sans-serif;color:var(-
 </div></div>
 <script>
 Chart.register(ChartDataLabels);
-const MESES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO'];
-const MS={ENERO:'Ene',FEBRERO:'Feb',MARZO:'Mar',ABRIL:'Abr',MAYO:'May',JUNIO:'Jun'};
-const ML={TODOS:'Ene – Jun 2026',ENERO:'Enero 2026',FEBRERO:'Febrero 2026',MARZO:'Marzo 2026',ABRIL:'Abril 2026',MAYO:'Mayo 2026',JUNIO:'Junio 2026'};
+const MESES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO'];
+const MS={ENERO:'Ene',FEBRERO:'Feb',MARZO:'Mar',ABRIL:'Abr',MAYO:'May',JUNIO:'Jun',JULIO:'Jul'};
+const ML={TODOS:'Ene – Jul 2026',ENERO:'Enero 2026',FEBRERO:'Febrero 2026',MARZO:'Marzo 2026',ABRIL:'Abril 2026',MAYO:'Mayo 2026',JUNIO:'Junio 2026',JULIO:'Julio 2026'};
 
 const RAW={
   prod:{
-    CONSULTAS:     {ENERO:65100,  FEBRERO:69000,  MARZO:56950,  ABRIL:44650,  MAYO:88450,  JUNIO:79250},
-    PROCEDIMIENTOS:{ENERO:248065, FEBRERO:253170, MARZO:188290, ABRIL:207590, MAYO:241850, JUNIO:190290},
-    INYECTABLES:   {ENERO:187700, FEBRERO:80350,  MARZO:126755, ABRIL:49900,  MAYO:307700, JUNIO:159841}
+    CONSULTAS:     {ENERO:65100,  FEBRERO:69000,  MARZO:56950,  ABRIL:44650,  MAYO:88450,  JUNIO:79250, JULIO:71500},
+    PROCEDIMIENTOS:{ENERO:248065, FEBRERO:253170, MARZO:188290, ABRIL:207590, MAYO:241850, JUNIO:190290, JULIO:161800},
+    INYECTABLES:   {ENERO:187700, FEBRERO:80350,  MARZO:126755, ABRIL:49900,  MAYO:307700, JUNIO:159841, JULIO:136500}
   },
-  ingFP:{ENERO:247548,FEBRERO:207085,MARZO:230714,ABRIL:126009.5,MAYO:288882.5,JUNIO:270612.5},
-  ingFM:{ENERO:203831,FEBRERO:188032,MARZO:233097.5,ABRIL:157221.18,MAYO:222272.5,JUNIO:202195},
-  gasFP:{ENERO:66859.66,FEBRERO:251583.42,MARZO:177094.68,ABRIL:92264.46,MAYO:265790.95,JUNIO:343326.14},
-  gasFM:{ENERO:250699.91,FEBRERO:156289.97,MARZO:341780.15,ABRIL:79718.26,MAYO:87558.28,JUNIO:161076.65},
-  gasPOL:{ENERO:188791.17,FEBRERO:43231.78,MARZO:206064.14,ABRIL:184694.17,MAYO:147775.09,JUNIO:57258.34},
-  gasMER:{ENERO:0,FEBRERO:96295,MARZO:24758.52,ABRIL:105934.76,MAYO:113831.14,JUNIO:106701.73},
+  ingFP:{ENERO:247548,FEBRERO:207085,MARZO:230714,ABRIL:126009.5,MAYO:288882.5,JUNIO:270612.5,JULIO:233227.5},
+  ingFM:{ENERO:203831,FEBRERO:188032,MARZO:233097.5,ABRIL:157221.18,MAYO:222272.5,JUNIO:202195,JULIO:176978.5},
+  gasFP:{ENERO:66859.66,FEBRERO:251583.42,MARZO:177094.68,ABRIL:92264.46,MAYO:265790.95,JUNIO:343326.14,JULIO:219714.72},
+  gasFM:{ENERO:250699.91,FEBRERO:156289.97,MARZO:341780.15,ABRIL:79718.26,MAYO:87558.28,JUNIO:161076.65,JULIO:143051.65},
+  gasPOL:{ENERO:188791.17,FEBRERO:43231.78,MARZO:206064.14,ABRIL:184694.17,MAYO:147775.09,JUNIO:57258.34,JULIO:206131.69},
+  gasMER:{ENERO:0,FEBRERO:96295,MARZO:24758.52,ABRIL:105934.76,MAYO:113831.14,JUNIO:106701.73,JULIO:133149.12},
   gasClas:{
     ENERO:{'Farm. Mérida':159187.41,'Farm. Polanco':66859.66,'Locativos':154721.95,'Nómina':62111.88,'Operacional':3587.07,'Seg. Social':26530.77,'Tributarios':29752,'Caja chica':3600},
     FEBRERO:{'Farm. Mérida':156289.97,'Farm. Polanco':251583.42,'Locativos':1614,'Nómina':67990.3,'Operacional':69922.48},
     MARZO:{'Farm. Mérida':295555.75,'Farm. Polanco':218593.83,'Locativos':32483.5,'Nómina':72715.55,'Operacional':91385.01,'Seg. Social':35463.85,'Caja chica':3500},
     ABRIL:{'Farm. Mérida':79718.26,'Farm. Polanco':92264.46,'Locativos':34271.48,'Nómina':73521.34,'Operacional':168742.49,'Seg. Social':12011.62,'Tesorería':2082},
     MAYO:{'Farm. Mérida':87558.28,'Farm. Polanco':265790.95,'Locativos':6662,'Nómina':68620.86,'Operacional':162246.37,'Tributarios':24077},
-    JUNIO:{'Farm. Mérida':161076.65,'Farm. Polanco':343326.14,'Locativos':83968.50,'Nómina':70439.57,'Operacional':9552.00}
+    JUNIO:{'Farm. Mérida':161076.65,'Farm. Polanco':343326.14,'Locativos':83968.50,'Nómina':70439.57,'Operacional':9552.00},
+    JULIO:{'Farm. Mérida':143051.65,'Farm. Polanco':219714.72,'Locativos':11435.50,'Operacional':302922.31,'Tributarios':24923.00}
   },
   pagos:{
-    BANORTE:      {ENERO:307215,   FEBRERO:281270,   MARZO:237265,   ABRIL:233553.98, MAYO:410600,  JUNIO:251505},
-    AMEX:         {ENERO:115300,   FEBRERO:49350,    MARZO:53050,    ABRIL:19900,     MAYO:117030,  JUNIO:48916},
-    EFECTIVO:     {ENERO:63350,    FEBRERO:44600,    MARZO:73680,    ABRIL:37990,     MAYO:84220,   JUNIO:86160},
-    TRANSFERENCIA:{ENERO:15000,    FEBRERO:27300,    MARZO:5800,     ABRIL:10696.02,  MAYO:25300,   JUNIO:42800},
-    PROC_PAGADO:  {ENERO:0,        FEBRERO:0,        MARZO:2200,     ABRIL:0,         MAYO:850,     JUNIO:0}
+    BANORTE:      {ENERO:307215,   FEBRERO:281270,   MARZO:237265,   ABRIL:233553.98, MAYO:410600,  JUNIO:251505, JULIO:246200},
+    AMEX:         {ENERO:115300,   FEBRERO:49350,    MARZO:53050,    ABRIL:19900,     MAYO:117030,  JUNIO:48916,  JULIO:55300},
+    EFECTIVO:     {ENERO:63350,    FEBRERO:44600,    MARZO:73680,    ABRIL:37990,     MAYO:84220,   JUNIO:86160,  JULIO:35900},
+    TRANSFERENCIA:{ENERO:15000,    FEBRERO:27300,    MARZO:5800,     ABRIL:10696.02,  MAYO:25300,   JUNIO:42800,  JULIO:21500},
+    PROC_PAGADO:  {ENERO:0,        FEBRERO:0,        MARZO:2200,     ABRIL:0,         MAYO:850,     JUNIO:0,      JULIO:10900}
+  },
+  prodDoc:{
+    DE_LA_VEGA:{
+      CONSULTAS:{ENERO:51300,FEBRERO:55500,MARZO:50450,ABRIL:31950,MAYO:69650,JUNIO:63750,JULIO:55500},
+      PROCEDIMIENTOS:{ENERO:90450,FEBRERO:130100,MARZO:40950,ABRIL:53750,MAYO:66950,JUNIO:60300,JULIO:63750},
+      INYECTABLES:{ENERO:135350,FEBRERO:39700,MARZO:126155,ABRIL:32100,MAYO:200300,JUNIO:139541,JULIO:115500}
+    },
+    GALVAN:{
+      CONSULTAS:{ENERO:13800,FEBRERO:13500,MARZO:6500,ABRIL:12700,MAYO:18800,JUNIO:15500,JULIO:16000},
+      PROCEDIMIENTOS:{ENERO:52000,FEBRERO:45300,MARZO:21700,ABRIL:48800,MAYO:9050,JUNIO:13250,JULIO:15100},
+      INYECTABLES:{ENERO:12350,FEBRERO:4500,MARZO:600,ABRIL:9000,MAYO:42480,JUNIO:8600,JULIO:9000}
+    },
+    BERENICE:{
+      CONSULTAS:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      PROCEDIMIENTOS:{ENERO:64325,FEBRERO:31140,MARZO:89540,ABRIL:56900,MAYO:150750,JUNIO:116740,JULIO:74300},
+      INYECTABLES:{ENERO:33500,FEBRERO:17350,MARZO:0,ABRIL:8800,MAYO:64920,JUNIO:11700,JULIO:7500}
+    },
+    CAROLINA:{
+      CONSULTAS:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      PROCEDIMIENTOS:{ENERO:41290,FEBRERO:43630,MARZO:36100,ABRIL:48140,MAYO:15100,JUNIO:0,JULIO:0},
+      INYECTABLES:{ENERO:6500,FEBRERO:18800,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0}
+    },
+    JENNY:{
+      CONSULTAS:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      PROCEDIMIENTOS:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:8650},
+      INYECTABLES:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:4500}
+    },
+    OTROS:{
+      CONSULTAS:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      PROCEDIMIENTOS:{ENERO:0,FEBRERO:3000,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      INYECTABLES:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0}
+    }
+  },
+  pagosDoc:{
+    DE_LA_VEGA:{
+      BANORTE:{ENERO:157200,FEBRERO:167400,MARZO:151475,ABRIL:77850,MAYO:236400,JUNIO:138325,JULIO:153700},
+      AMEX:{ENERO:96800,FEBRERO:37800,MARZO:16300,ABRIL:19900,MAYO:53950,JUNIO:41266,JULIO:42900},
+      EFECTIVO:{ENERO:23100,FEBRERO:17300,MARZO:46580,ABRIL:20050,MAYO:36550,JUNIO:61050,JULIO:30550},
+      TRANSFERENCIA:{ENERO:0,FEBRERO:2800,MARZO:1000,ABRIL:0,MAYO:9150,JUNIO:22950,JULIO:3700},
+      PROC_PAGADO:{ENERO:0,FEBRERO:0,MARZO:2200,ABRIL:0,MAYO:850,JUNIO:0,JULIO:3900}
+    },
+    GALVAN:{
+      BANORTE:{ENERO:72250,FEBRERO:56200,MARZO:16400,ABRIL:63200,MAYO:47330,JUNIO:23900,JULIO:29100},
+      AMEX:{ENERO:4200,FEBRERO:0,MARZO:5300,ABRIL:0,MAYO:17900,JUNIO:3000,JULIO:1500},
+      EFECTIVO:{ENERO:1700,FEBRERO:5600,MARZO:5800,ABRIL:5500,MAYO:3800,JUNIO:6100,JULIO:2500},
+      TRANSFERENCIA:{ENERO:0,FEBRERO:1500,MARZO:1300,ABRIL:1800,MAYO:1300,JUNIO:4350,JULIO:0},
+      PROC_PAGADO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:7000}
+    },
+    BERENICE:{
+      BANORTE:{ENERO:46075,FEBRERO:35090,MARZO:43740,ABRIL:47650,MAYO:118470,JUNIO:89280,JULIO:51100},
+      AMEX:{ENERO:4800,FEBRERO:11550,MARZO:30000,ABRIL:0,MAYO:45180,JUNIO:4650,JULIO:10900},
+      EFECTIVO:{ENERO:31950,FEBRERO:1850,MARZO:13300,ABRIL:11600,MAYO:37170,JUNIO:19010,JULIO:2000},
+      TRANSFERENCIA:{ENERO:15000,FEBRERO:0,MARZO:2500,ABRIL:6450,MAYO:14850,JUNIO:15500,JULIO:17800},
+      PROC_PAGADO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0}
+    },
+    CAROLINA:{
+      BANORTE:{ENERO:31690,FEBRERO:22580,MARZO:25650,ABRIL:44853.98,MAYO:8400,JUNIO:0,JULIO:0},
+      AMEX:{ENERO:9500,FEBRERO:0,MARZO:1450,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      EFECTIVO:{ENERO:6600,FEBRERO:19850,MARZO:8000,ABRIL:840,MAYO:6700,JUNIO:0,JULIO:0},
+      TRANSFERENCIA:{ENERO:0,FEBRERO:20000,MARZO:1000,ABRIL:2446.02,MAYO:0,JUNIO:0,JULIO:0},
+      PROC_PAGADO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0}
+    },
+    JENNY:{
+      BANORTE:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:12300},
+      AMEX:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      EFECTIVO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:850},
+      TRANSFERENCIA:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      PROC_PAGADO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0}
+    },
+    OTROS:{
+      BANORTE:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      AMEX:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      EFECTIVO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      TRANSFERENCIA:{ENERO:0,FEBRERO:3000,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0},
+      PROC_PAGADO:{ENERO:0,FEBRERO:0,MARZO:0,ABRIL:0,MAYO:0,JUNIO:0,JULIO:0}
+    }
   }
 };
+const DR_LABEL={TODOS:'Todos los médicos',DE_LA_VEGA:'Dra. de la Vega',GALVAN:'Dra. Galván',BERENICE:'Cosm. Berenice',CAROLINA:'Cosm. Carolina',JENNY:'Cosm. Jenny',OTROS:'Otros'};
 
 let charts={};
 const sum=a=>a.reduce((x,y)=>x+y,0);
@@ -343,6 +445,7 @@ function fmtK(v){if(!v||v===0)return'';const a=Math.abs(v),s=v<0?'-':'';if(a>=10
 function pct(v,t){return t?(v/t*100).toFixed(1)+'%':'—';}
 function selMes(){return document.getElementById('sel-mes').value;}
 function selArea(){return document.getElementById('sel-area').value;}
+function selDr(){return document.getElementById('sel-dr').value;}
 function activeMeses(){const m=selMes();return m==='TODOS'?MESES:[m];}
 function mkChart(id,cfg){if(charts[id]){charts[id].destroy();delete charts[id];}const el=document.getElementById(id);if(el)charts[id]=new Chart(el,cfg);}
 function showTab(id,btn){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tbn').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');}
@@ -366,12 +469,18 @@ function kpiH(lbl,val,sub,cls){
 }
 
 function updateAll(){
-  const mes=selMes(),area=selArea(),meses=activeMeses(),labels=meses.map(m=>MS[m]);
-  document.getElementById('pchip').textContent=ML[mes];
+  const mes=selMes(),area=selArea(),dr=selDr(),meses=activeMeses(),labels=meses.map(m=>MS[m]);
+  document.getElementById('pchip').textContent=ML[mes]+(dr==='TODOS'?'':' · '+DR_LABEL[dr]);
+  const fchip=`Mes: ${ML[mes]} · Dr: ${DR_LABEL[dr]}`+(area==='TODOS'?'':' · Área: '+document.getElementById('sel-area').selectedOptions[0].text);
+  document.querySelectorAll('.fchip').forEach(el=>el.textContent=fchip);
+  document.querySelectorAll('.dr-na').forEach(el=>el.classList.toggle('show', dr!=='TODOS'));
 
-  const prodCons=meses.map(m=>RAW.prod.CONSULTAS[m]||0);
-  const prodProc=meses.map(m=>RAW.prod.PROCEDIMIENTOS[m]||0);
-  const prodInj =meses.map(m=>RAW.prod.INYECTABLES[m]||0);
+  const prodSrc = dr==='TODOS' ? RAW.prod : RAW.prodDoc[dr];
+  const pagoSrc = dr==='TODOS' ? RAW.pagos : RAW.pagosDoc[dr];
+
+  const prodCons=meses.map(m=>prodSrc.CONSULTAS[m]||0);
+  const prodProc=meses.map(m=>prodSrc.PROCEDIMIENTOS[m]||0);
+  const prodInj =meses.map(m=>prodSrc.INYECTABLES[m]||0);
   const prodTot =meses.map((_,i)=>prodCons[i]+prodProc[i]+prodInj[i]);
   const ingFP  =meses.map(m=>RAW.ingFP[m]||0);
   const ingFM  =meses.map(m=>RAW.ingFM[m]||0);
@@ -409,11 +518,11 @@ function updateAll(){
   const sMarFP=sum(marFP),sMarFM=sum(marFM),sMarCl=sum(marCl),sMarCon=sum(marCon);
   const sCons=sum(prodCons),sProc=sum(prodProc),sInj=sum(prodInj);
   let clasTot={};meses.forEach(m=>{Object.entries(RAW.gasClas[m]||{}).forEach(([k,v])=>{clasTot[k]=(clasTot[k]||0)+v;});});
-  const pBan=meses.map(m=>RAW.pagos.BANORTE[m]||0);
-  const pAmx=meses.map(m=>RAW.pagos.AMEX[m]||0);
-  const pEfx=meses.map(m=>RAW.pagos.EFECTIVO[m]||0);
-  const pTrn=meses.map(m=>RAW.pagos.TRANSFERENCIA[m]||0);
-  const pPro=meses.map(m=>RAW.pagos.PROC_PAGADO[m]||0);
+  const pBan=meses.map(m=>pagoSrc.BANORTE[m]||0);
+  const pAmx=meses.map(m=>pagoSrc.AMEX[m]||0);
+  const pEfx=meses.map(m=>pagoSrc.EFECTIVO[m]||0);
+  const pTrn=meses.map(m=>pagoSrc.TRANSFERENCIA[m]||0);
+  const pPro=meses.map(m=>pagoSrc.PROC_PAGADO[m]||0);
   const sBan=sum(pBan),sAmx=sum(pAmx),sEfx=sum(pEfx),sTrn=sum(pTrn),sPro=sum(pPro),sPagTot=sBan+sAmx+sEfx+sTrn+sPro;
 
   // === KPIs RESUMEN ===
